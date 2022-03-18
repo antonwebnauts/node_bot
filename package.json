@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "input": "^1.0.1",
+    "telegram": "^2.5.22"
+  },
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}
