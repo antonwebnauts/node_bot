@@ -1,47 +1,69 @@
-const express = require('express');
-const app = express();
-const {Api,  TelegramClient } = require( "telegram");
-const { StringSession } = require( "telegram/sessions");
-const input = require( "input");
+require('dotenv').config()
+const express = require('express')
+const router = require('./routes/mainRouter')
+const sequelize = require('./db')
+// const cron = require('./cron/CronKernel')
+const cors = require('cors')
+const logger = require('./utils/logger')
+require('express-async-errors');
+const configuration = require('./configuration')
 
 
-app.get('/login', async (req, res) => {
-    const apiId = 1;
-    const apiHash = "";
-    const stringSession = new StringSession("");
-    console.log("Loading interactive example...");
-    const client = new TelegramClient(stringSession, apiId, apiHash, {
-        connectionRetries: 5,
-    });
-    await client.start({
-        phoneNumber: async () => await input.text("Please enter your number: "),
-        password: async () => await input.text("Please enter your password: "),
-        phoneCode: async () =>
-            await input.text("Please enter the code you received: "),
-        onError: (err) => console.log(err),
-    });
-    console.log("You should now be connected.");
-    console.log(client.session.save()); // Save this string to avoid logging in again
-    await client.sendMessage("me", { message: "Hello!" });
-})
+const PORT = process.env.PORT || 5000
 
-app.get('/call', async (req, res) => {
-    const apiId = 1;
-    const apiHash = "";
-    const session = new StringSession(""); // You should put your string session here
-    const client = new TelegramClient(session, apiId, apiHash, {});
-    await client.connect(); // This assumes you have already authenticated with .start()
+const app = express()
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({extended: true}))
 
-    const result = await client.invoke(
-        new Api.messages.GetMessageReactionsList({
-            peer: -1001603234133,
-            id: 209,
-            limit: 10
-        })
-    );
-    res.send({message: result});
-})
+app.use('/', router)
 
-app.listen(3333, () => {
-    console.log('Application listening on port 3333!');
+
+const start = async () => {
+    try {
+        console.log('Server started')
+        await sequelize.authenticate()
+        // await sequelize.sync({ alter: true })
+        app.listen(PORT, () => console.log('Server started'))
+    } catch (e) {
+        console.log(e)
+    }
+}
+// cron.startCron()
+//
+start()
+
+/**
+ * catch 404 and forward to error handler
+ */
+
+app.use(function (req, res, next) {
+    let err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
+
+/**
+ * error handlers - these take err object.
+  */
+
+if (process.env.ENVIRONMENT === configuration.ENV_LOCAL) {
+    app.use(function (err, req, res, next) {
+        logger.error(JSON.stringify(err.message + err.stack))
+        res.status(err.status || 500);
+        res.json({
+            message: err.message,
+            error: err.stack
+        });
+    });
+} else {
+    app.use(function (err, req, res, next) {
+        logger.error(JSON.stringify(err.message + err.stack))
+        res.status(err.status || 500);
+        res.json({
+            message: 'INTERNAL SERVER ERROR',
+        });
+    });
+}
+
+

@@ -1,9 +1,25 @@
 {
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
   "devDependencies": {
-    "input": "^1.0.1",
-    "telegram": "^2.5.22"
+    "nodemon": "^2.0.7",
+    "sequelize-cli": "^6.4.1"
   },
   "dependencies": {
-    "express": "^4.17.3"
+    "express": "^4.17.3",
+    "axios": "^0.19.2",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express-async-errors": "^3.1.1",
+    "express-async-handler": "^1.2.0",
+    "sequelize": "^6.6.2",
+    "pg": "^8.5.1",
+    "pg-hstore": "^2.3.3",
+    "input": "^1.0.1",
+    "telegram": "^2.5.22",
+    "winston": "^3.3.3",
+    "moment": "^2.29.1"
   }
 }
